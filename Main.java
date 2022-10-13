@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 
@@ -21,6 +22,8 @@ public class Main {
 
         File savegames = new File(game, "savegames");
         makeDir(savegames, sb);
+
+        File saveZip = new File(savegames, "zip.zip");
 
         File temp = new File(game, "temp");
         makeDir(temp, sb);
@@ -61,6 +64,10 @@ public class Main {
         zipFiles(savegames.getAbsolutePath(), savesPaths(savegames), sb);
 
         deleteSaves(savegames, sb);
+
+        openZip(saveZip, savegames, sb);
+
+        System.out.println((openProgress(savegames + "/save2.dat", sb)));
 
         logWriter(sb, temp1);
     }
@@ -109,7 +116,7 @@ public class Main {
                     zout.closeEntry();
                     sb.append(name + " заархивирован\n");
                 } catch (IOException ex) {
-                    sb.append(name + " ошибка архивирования");
+                    sb.append(name + " ошибка архивирования\n");
                     System.out.println(ex.getMessage());
                 }
             }
@@ -148,4 +155,38 @@ public class Main {
             }
         }
     }
+     public static void openZip (File saveZip, File saveGames, StringBuilder sb) {
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(saveZip))) {
+            String name;
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                name = entry.getName();
+                FileOutputStream fous = new FileOutputStream(saveGames + "/" + name);
+                for (int c = zis.read(); c != -1; c = zis.read()) {
+                    fous.write(c);
+                }
+                fous.flush();
+                zis.closeEntry();
+                fous.close();
+                sb.append(name + " разархивирован\n");
+            }
+        } catch (IOException ex) {
+            sb.append(ex.getMessage() + "\n");
+            System.out.println(ex.getMessage() + "\n");
+        }
+     }
+
+     public static GameProgress openProgress (String path, StringBuilder sb){
+        GameProgress gameProgress = null;
+        try (FileInputStream fis = new FileInputStream(path); ObjectInputStream ois  = new ObjectInputStream(fis)) {
+            gameProgress = (GameProgress) ois.readObject();
+            sb.append(gameProgress + " загружен");
+        } catch (Exception ex) {
+            sb.append(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+        return gameProgress;
+     }
+
 }

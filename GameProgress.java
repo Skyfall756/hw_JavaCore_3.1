@@ -1,6 +1,5 @@
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
 
 public class GameProgress implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -26,16 +25,6 @@ public class GameProgress implements Serializable {
                 ", distance=" + distance +
                 '}';
     }
-
-    public void saveGame(String path, GameProgress gp, StringBuilder sb) {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH_mm_ss_SSS");
-        path = path + "/save" + sdf.format(new Date()) + ".dat";
-        try (FileOutputStream fos = new FileOutputStream(path);
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-            oos.writeObject(gp);
-            sb.append(gp + " сохранен\n");
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
-    }
 }
+
+

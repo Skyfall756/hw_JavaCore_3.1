@@ -57,19 +57,13 @@ public class Main {
 
 
 
-        for (GameProgress gameProgress : gp) {
-            String path = savegames.getPath();
-            gameProgress.saveGame(path, gameProgress, sb);
-        }
-        logWriter(sb, temp1);
+        saveGame(savegames.getPath(), gp, sb);
 
         zipFiles(savegames.getAbsolutePath(), savesPaths(savegames));
 
-     //   deleteSaves(savegames);
+        deleteSaves(savegames, sb);
 
-
-
-
+        logWriter(sb, temp1);
     }
 
 
@@ -125,7 +119,7 @@ public class Main {
 
     public static List <String> savesPaths(File saves) {
         List<String> paths = new ArrayList<>();
-        File[] file = saves.listFiles();
+        File[] file = saves.listFiles( new MyFileNameFilter(".dat"));
         for (int i = 0; i < file.length; i++) {
             String path = file[i].getAbsolutePath();
             paths.add(path);
@@ -133,10 +127,21 @@ public class Main {
         return paths;
     }
 
-    public static void deleteSaves (File savegame) {
-        for (File file : savegame.listFiles()) {
-            if (file.isFile())
-            file.delete();
+    public static void deleteSaves (File savegame, StringBuilder sb) {
+        for (File file : savegame.listFiles(new MyFileNameFilter(".dat"))) {
+            if(file.delete()) sb.append(file.getName() + " удален\n");
+        }
+    }
+    public static void saveGame(String path, List<GameProgress> gp, StringBuilder sb) {
+        for (int p = 0; p < gp.size(); p++) {
+            String paths = path + "/save" + p + ".dat";
+            try (FileOutputStream fos = new FileOutputStream(paths);
+                 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                oos.writeObject(gp.get(p));
+                sb.append(gp.get(p) + " сохранен\n");
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
         }
     }
 }
